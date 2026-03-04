@@ -1420,6 +1420,30 @@ header h1 {
     margin-left: 4px;
 }
 
+/* 新聞／盤前資料載入說明（專業提示區塊） */
+.news-premarket-load-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #64748b;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #475569;
+}
+.news-premarket-load-notice .notice-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+}
+.news-premarket-load-notice .notice-text {
+    margin: 0;
+    font-weight: 500;
+}
+
 /* 新聞聲量區塊 */
 .volume-section {
     background: white;

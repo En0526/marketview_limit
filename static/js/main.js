@@ -154,28 +154,12 @@ async function refreshMarketData(market) {
 function displayMarketData(data) {
     console.log('displayMarketData called with:', data);
 
-    // 無資料標的（404/環境差異）：顯示清單方便比對代碼
+    // 無資料標的（404/環境差異）：不再於畫面上顯示，僅供後端/本機除錯
     var skippedEl = document.getElementById('skipped-symbols-hint');
     if (skippedEl) {
-        if (data && data.skipped_symbols && data.skipped_symbols.length > 0) {
-            var list = data.skipped_symbols;
-            var msg;
-            if (list.length > 20) {
-                msg = '⚠️ 多數標的暫無報價（多為 Yahoo 對雲端 IP 限流或阻擋，非代碼錯誤）。請稍後重試或於本機使用。';
-            } else {
-                var parts = list.map(function (s) {
-                    return (s.symbol || s.name) + (s.section ? ' (' + s.section + ')' : '');
-                });
-                msg = '⚠️ 以下標的暫無報價（可檢查代碼或環境）：<code>' + parts.join(', ') + '</code>';
-            }
-            skippedEl.innerHTML = msg;
-            skippedEl.classList.remove('hidden');
-            skippedEl.setAttribute('aria-hidden', 'false');
-        } else {
-            skippedEl.innerHTML = '';
-            skippedEl.classList.add('hidden');
-            skippedEl.setAttribute('aria-hidden', 'true');
-        }
+        skippedEl.innerHTML = '';
+        skippedEl.classList.add('hidden');
+        skippedEl.setAttribute('aria-hidden', 'true');
     }
 
     // 美股指數已併入國際市場

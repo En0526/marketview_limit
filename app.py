@@ -390,7 +390,7 @@ def get_ir_meetings():
 
 @app.route('/api/ir-meetings/upload', methods=['POST'])
 def upload_ir_csv():
-    """上傳法說會 CSV。會從內容辨識月份，存為 N月.csv 並覆蓋同月份舊檔。"""
+    """上傳法說會 CSV。會從內容辨識月份與市場，存為 N月-市.csv / N月-櫃.csv。"""
     from flask import request
     try:
         if 'file' not in request.files:
@@ -399,12 +399,37 @@ def upload_ir_csv():
         if not f or not f.filename:
             return jsonify({'success': False, 'error': '請選擇檔案'}), 400
         content = f.read()
-        saved_name, detected_month = ir_fetcher.save_uploaded_csv(f.filename, content)
+        saved_name, detected_month, detected_market = ir_fetcher.save_uploaded_csv(f.filename, content)
         return jsonify({
             'success': True,
             'data': {
                 'saved_filename': saved_name,
                 'detected_month': detected_month,
+                'detected_market': detected_market,
+                'uploaded_files': ir_fetcher.list_ir_csv_files()
+            },
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/ir-meetings/file', methods=['DELETE'])
+def delete_ir_csv():
+    """刪除指定法說會 CSV（檔名需在 ir_csv 內）。"""
+    from flask import request
+    try:
+        body = request.get_json(silent=True) or {}
+        filename = (body.get('filename') or '').strip()
+        if not filename:
+            return jsonify({'success': False, 'error': '缺少 filename'}), 400
+        ok = ir_fetcher.delete_ir_csv_file(filename)
+        if not ok:
+            return jsonify({'success': False, 'error': '找不到檔案或檔名不合法'}), 404
+        return jsonify({
+            'success': True,
+            'data': {
+                'deleted_filename': filename,
                 'uploaded_files': ir_fetcher.list_ir_csv_files()
             },
             'timestamp': datetime.now(timezone.utc).isoformat()

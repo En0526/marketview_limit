@@ -1387,8 +1387,37 @@ function renderIRFiles(files) {
         return;
     }
     el.innerHTML = files.map(function(f) {
-        return '<span class="institutional-date-chip">' + f + '</span>';
+        const safe = String(f || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const jsSafe = String(f || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        return (
+            '<span class="institutional-date-chip ir-file-chip">' +
+            '<span class="ir-file-name" title="' + safe + '">' + safe + '</span>' +
+            '<button type="button" class="ir-file-delete-btn" onclick="deleteIRCsvFile(\'' + jsSafe + '\')" title="刪除這個檔案">×</button>' +
+            '</span>'
+        );
     }).join('');
+}
+
+async function deleteIRCsvFile(filename) {
+    if (!filename) return;
+    const ok = window.confirm('確定要刪除：' + filename + ' ？');
+    if (!ok) return;
+    try {
+        const res = await fetch('/api/ir-meetings/file', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: filename })
+        });
+        const result = await res.json();
+        if (result.success) {
+            renderIRFiles((result.data && result.data.uploaded_files) || []);
+            await loadIRMeetings(true);
+        } else {
+            showError('刪除失敗: ' + (result.error || '未知錯誤'));
+        }
+    } catch (err) {
+        showError('刪除失敗: ' + (err.message || '請稍後再試'));
+    }
 }
 
 async function uploadIRCsv() {
@@ -1413,7 +1442,8 @@ async function uploadIRCsv() {
                 ok++;
                 if (result.data.uploaded_files) renderIRFiles(result.data.uploaded_files);
                 if (result.data.detected_month && statusEl) {
-                    statusEl.textContent = '辨識為 ' + result.data.detected_month + ' 月 → ' + (result.data.saved_filename || '');
+                    var mk = result.data.detected_market === 'otc' ? '上櫃' : (result.data.detected_market === 'sii' ? '上市' : '未辨識市場');
+                    statusEl.textContent = '辨識為 ' + result.data.detected_month + ' 月（' + mk + '）→ ' + (result.data.saved_filename || '');
                 }
             } else {
                 fail++;
@@ -1726,6 +1756,9 @@ function displayIRTimeline(data) {
     
     const totalMeetings = data.total_meetings || 0;
     const dateRange = data.date_range || {};
+    const marketCounts = data.market_counts || {};
+    const siiCount = marketCounts.sii || 0;
+    const otcCount = marketCounts.otc || 0;
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     
@@ -1747,6 +1780,7 @@ function displayIRTimeline(data) {
         <div class="ir-header">
             <div class="ir-stats">
                 <span>總計 <strong>${totalMeetings}</strong> 場法說會</span>
+                <span>上市 <strong>${siiCount}</strong> · 上櫃 <strong>${otcCount}</strong></span>
                 ${dateRange.start && dateRange.end ? 
                     `<span>期間: ${formatDate(dateRange.start)} ~ ${formatDate(dateRange.end)}</span>` : ''}
             </div>

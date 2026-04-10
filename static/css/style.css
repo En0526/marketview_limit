@@ -713,6 +713,35 @@ header h1 {
     color: #333;
     border-radius: 6px;
 }
+.ir-file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+}
+.ir-file-name {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ir-file-delete-btn {
+    border: 1px solid #c7ccd8;
+    background: transparent;
+    color: #6f7688;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+}
+.ir-file-delete-btn:hover {
+    color: #c03847;
+    border-color: #e0a2ab;
+}
 .institutional-dates-empty {
     font-size: 13px;
     color: #888;

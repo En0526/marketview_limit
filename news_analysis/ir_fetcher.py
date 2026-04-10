@@ -323,9 +323,18 @@ class IRFetcher:
                 'count': len(timeline[date_str])
             })
         
+        market_counts = {'sii': 0, 'otc': 0, 'other': 0}
+        for m in meetings:
+            mk = (m.get('market') or '').lower()
+            if mk in ('sii', 'otc'):
+                market_counts[mk] += 1
+            else:
+                market_counts['other'] += 1
+
         return {
             'timeline': timeline_list,
             'total_meetings': len(meetings),
+            'market_counts': market_counts,
             'date_range': {
                 'start': timeline_list[0]['date'] if timeline_list else None,
                 'end': timeline_list[-1]['date'] if timeline_list else None
@@ -334,14 +343,74 @@ class IRFetcher:
         }
     
     def list_ir_csv_files(self) -> List[str]:
-        """掃描 ir_csv 目錄，回傳已有 CSV 檔名列表（已排序）。"""
+        """掃描 ir_csv 目錄，回傳去重後的 CSV 檔名列表（已排序）。"""
         if not self.csv_dir.exists():
             return []
-        files = []
-        for p in self.csv_dir.iterdir():
-            if p.is_file() and p.suffix.lower() == '.csv':
-                files.append(p.name)
-        return sorted(files)
+        import re
+
+        files = [p for p in self.csv_dir.iterdir() if p.is_file() and p.suffix.lower() == '.csv']
+        # 先以新到舊排序，讓最新上傳有優先權
+        files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+
+        # key: (month, market) -> filename
+        # month: int or None, market: 'sii'/'otc'/None
+        dedup = {}
+
+        def _name_priority(name: str) -> int:
+            # 優先顯示標準命名：N月-市.csv / N月-櫃.csv / N月.csv
+            if re.fullmatch(r'\d{1,2}月-(市|櫃)\.csv', name):
+                return 3
+            if re.fullmatch(r'\d{1,2}月\.csv', name):
+                return 2
+            return 1
+
+        for p in files:
+            month = None
+            market = None
+
+            m = re.fullmatch(r'(\d{1,2})月-(市|櫃)\.csv', p.name)
+            if m:
+                month = int(m.group(1))
+                market = 'sii' if m.group(2) == '市' else 'otc'
+            else:
+                m2 = re.fullmatch(r'(\d{1,2})月\.csv', p.name)
+                if m2:
+                    month = int(m2.group(1))
+                else:
+                    m3 = re.search(r'20\d{2}(0[1-9]|1[0-2])\d{2}', p.name)
+                    if m3:
+                        try:
+                            month = int(m3.group(1))
+                        except ValueError:
+                            month = None
+                    # 不是標準名稱則嘗試從內容辨識
+                    try:
+                        b = p.read_bytes()
+                        content_month = self._detect_month_from_csv_content(b)
+                        if content_month is not None:
+                            month = content_month
+                        market = self._detect_market_from_csv_content(b)
+                    except Exception:
+                        pass
+
+            key = (month, market)
+            if key not in dedup:
+                dedup[key] = p.name
+                continue
+
+            current = dedup[key]
+            if _name_priority(p.name) > _name_priority(current):
+                dedup[key] = p.name
+
+        # 若同月份已有上市/上櫃，則隱藏該月 market=None 的泛用檔，避免多一格
+        months_with_market = {m for (m, mk) in dedup.keys() if m is not None and mk in ('sii', 'otc')}
+        filtered = []
+        for (m, mk), name in dedup.items():
+            if m in months_with_market and mk is None:
+                continue
+            filtered.append(name)
+
+        return sorted(filtered)
     
     def get_ir_csv_last_updated(self) -> Optional[datetime]:
         """回傳 ir_csv 目錄內 CSV 檔案的最新修改時間。"""
@@ -362,47 +431,126 @@ class IRFetcher:
         """
         import re
         text = None
-        for enc in ('big5', 'utf-8', 'utf-8-sig', 'cp950'):
+        for enc in ('big5', 'cp950', 'utf-8', 'utf-8-sig'):
             try:
-                text = content.decode(enc)
-                break
-            except (UnicodeDecodeError, LookupError):
+                text = content.decode(enc, errors='ignore')
+                if text:
+                    break
+            except LookupError:
                 continue
         if not text:
+            # 最後兜底，至少不要因編碼問題整個辨識失敗
+            try:
+                text = content.decode('latin-1', errors='ignore')
+            except Exception:
+                return None
+        if not text:
             return None
+        import io
         month_counts = {}
-        for line in text.splitlines()[:100]:
-            parts = line.split(',') if ',' in line else line.split('\t')
-            for i, cell in enumerate(parts):
-                if i > 5:
+        try:
+            reader = csv.reader(io.StringIO(text))
+            for row_idx, row in enumerate(reader):
+                if row_idx > 200:
                     break
-                cell = cell.strip().strip('"')
-                m = re.search(r'(\d{2,3})/(\d{1,2})/(\d{1,2})', cell)
-                if m:
-                    try:
-                        month = int(m.group(2))
-                        if 1 <= month <= 12:
-                            month_counts[month] = month_counts.get(month, 0) + 1
-                    except ValueError:
-                        pass
+                for i, cell in enumerate(row):
+                    if i > 6:
+                        break
+                    cell = (cell or '').strip().strip('"')
+                    m = re.search(r'(\d{2,3})/(\d{1,2})/(\d{1,2})', cell)
+                    if m:
+                        try:
+                            month = int(m.group(2))
+                            if 1 <= month <= 12:
+                                month_counts[month] = month_counts.get(month, 0) + 1
+                        except ValueError:
+                            pass
+        except Exception:
+            return None
         if not month_counts:
             return None
         return max(month_counts.keys(), key=lambda m: month_counts[m])
+
+    def _detect_market_from_csv_content(self, content: bytes) -> Optional[str]:
+        """
+        從 CSV 內容粗分市場：
+        - sii（上市）: 代號首碼常見 1/2/9
+        - otc（上櫃）: 代號首碼常見 3~8
+        若無法判斷回傳 None。
+        """
+        text = None
+        for enc in ('big5', 'cp950', 'utf-8', 'utf-8-sig'):
+            try:
+                text = content.decode(enc, errors='ignore')
+                if text:
+                    break
+            except LookupError:
+                continue
+        if not text:
+            try:
+                text = content.decode('latin-1', errors='ignore')
+            except Exception:
+                return None
+        if not text:
+            return None
+
+        import io
+        sii = 0
+        otc = 0
+        checked = 0
+        try:
+            reader = csv.reader(io.StringIO(text))
+            for row_idx, row in enumerate(reader):
+                if row_idx > 1000 or checked > 500:
+                    break
+                if not row:
+                    continue
+                code = (row[0] if len(row) > 0 else '').strip().strip('"')
+                if not code or '公司代號' in code:
+                    continue
+                first_digit = None
+                for ch in code:
+                    if ch.isdigit():
+                        first_digit = ch
+                        break
+                if first_digit is None:
+                    continue
+                checked += 1
+                if first_digit in {'1', '2', '9'}:
+                    sii += 1
+                elif first_digit in {'3', '4', '5', '6', '7', '8'}:
+                    otc += 1
+        except Exception:
+            return None
+
+        if sii == 0 and otc == 0:
+            return None
+        return 'sii' if sii >= otc else 'otc'
     
     def save_uploaded_csv(self, filename: str, content: bytes) -> tuple:
         """
         將上傳的 CSV 存到 ir_csv，並清除快取。
-        會嘗試從內容辨識月份，若成功則存為「N月.csv」並覆蓋同月份舊檔；否則保留原檔名。
-        回傳 (saved_filename, detected_month or None)
+        會嘗試從內容辨識月份與市場，若成功則存為：
+        - N月-市.csv（上市）
+        - N月-櫃.csv（上櫃）
+        若無法辨識市場則存 N月.csv；若月份也無法辨識則保留原檔名。
+        回傳 (saved_filename, detected_month or None, detected_market or None)
         """
         import re
         detected_month = self._detect_month_from_csv_content(content)
+        detected_market = self._detect_market_from_csv_content(content)
         if detected_month is not None:
             month_names = {
                 1: '1月', 2: '2月', 3: '3月', 4: '4月', 5: '5月', 6: '6月',
                 7: '7月', 8: '8月', 9: '9月', 10: '10月', 11: '11月', 12: '12月'
             }
-            safe = f'{month_names[detected_month]}.csv'
+            month_name = month_names[detected_month]
+            if detected_market == 'sii':
+                safe = f'{month_name}-市.csv'
+            elif detected_market == 'otc':
+                safe = f'{month_name}-櫃.csv'
+            else:
+                safe = f'{month_name}.csv'
         else:
             base = Path(filename).name
             if not base.lower().endswith('.csv'):
@@ -414,6 +562,40 @@ class IRFetcher:
         self.csv_dir.mkdir(exist_ok=True)
         with open(path, 'wb') as f:
             f.write(content)
+
+        # 同月份同市場只保留一份，避免同一份資料出現多個檔名（例如 4月.csv / t100... / 4月-櫃.csv 並存）
+        if detected_month is not None and detected_market in ('sii', 'otc'):
+            for p in self.csv_dir.glob('*.csv'):
+                if p.name == safe:
+                    continue
+                try:
+                    with open(p, 'rb') as rf:
+                        b = rf.read()
+                    m = self._detect_month_from_csv_content(b)
+                    mk = self._detect_market_from_csv_content(b)
+                    if m == detected_month and mk == detected_market:
+                        p.unlink()
+                except Exception:
+                    # 不影響主流程，清理失敗就略過
+                    continue
+
         self.cache.clear()
         self.cache_time.clear()
-        return (safe, detected_month)
+        return (safe, detected_month, detected_market)
+
+    def delete_ir_csv_file(self, filename: str) -> bool:
+        """刪除 ir_csv 目錄內指定檔案（僅允許刪除 .csv）。"""
+        if not filename:
+            return False
+        safe_name = Path(filename).name
+        if safe_name != filename:
+            return False
+        if not safe_name.lower().endswith('.csv'):
+            return False
+        target = self.csv_dir / safe_name
+        if not target.exists() or not target.is_file():
+            return False
+        target.unlink()
+        self.cache.clear()
+        self.cache_time.clear()
+        return True

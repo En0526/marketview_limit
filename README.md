@@ -1,5 +1,12 @@
 # 市場監控 × 智能交易系統｜雲端即開即用版（`marketview_limit`）
 
+## 立即使用（免下載）
+
+**👉 點此開啟網站：** [https://trading-system-kkhs.onrender.com/](https://trading-system-kkhs.onrender.com/)
+
+複製網址：`https://trading-system-kkhs.onrender.com/`  
+（免安裝、免登入即可瀏覽示意功能；免費方案主機閒置後首次開啟可能需等待約數十秒喚醒。）
+
 **開瀏覽器就能看盤、試用擇時與策略匹配**——不必先 clone、不必本機安裝，點連結就能體驗。
 
 本倉庫為**為了上雲端（例如 Render）而維護的版本**：讓**沒有下載本專案程式碼的人**也能透過公開網址使用網站。
@@ -12,7 +19,7 @@
 
 一個智能交易系統，具備擇時功能和策略自動匹配能力。
 
-> **📋 [網站使用指南（客戶必看）](網站使用指南.md)** — 示意版網址、完整功能洽詢說明
+> **📋 [網站使用指南（客戶必看）](網站使用指南.md)** — 線上示意版：[https://trading-system-kkhs.onrender.com/](https://trading-system-kkhs.onrender.com/)；完整功能洽詢見指南內說明
 
 ## 功能特色
 

@@ -1,4 +1,4 @@
-# Trading System - 交易系統（雲端部署版 / `marketview_limit`）
+# 交易系統 市場監控（雲端部署版 / `marketview_limit`）
 
 本倉庫為**為了上雲端（例如 Render）而維護的版本**：讓**沒有下載本專案程式碼的人**也能透過公開網址使用網站。
 

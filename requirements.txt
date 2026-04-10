@@ -1,7 +1,8 @@
-Flask>=3.0.0
-yfinance>=0.2.28
-pandas>=2.2.0
-numpy>=2.0.0
+# Render / Linux：鎖定版本避免 pip 拉到不相容的新版（常見 build 失敗原因）
+Flask>=3.0.0,<4
+yfinance>=0.2.28,<1
+pandas>=2.2.0,<3
+numpy>=1.26.0,<2
 requests>=2.31.0
 certifi>=2024.0.0
 python-dotenv>=1.0.0

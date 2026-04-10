@@ -7,26 +7,34 @@
 複製網址：`https://trading-system-kkhs.onrender.com/`  
 （免安裝、免登入即可瀏覽示意功能；免費方案主機閒置後首次開啟可能需等待約數十秒喚醒。）
 
+## 需要完整版功能？請下載本機專案
+
+**👉 完整功能（與作者日常使用相同）：** [https://github.com/En0526/marketview_pro](https://github.com/En0526/marketview_pro)
+
+請至該 repo clone 後依 README 在本機執行；雲端本倉庫僅為示意，報價／爬蟲等能力會明顯受限。
+
+---
+
 **開瀏覽器就能看盤、試用擇時與策略匹配**——不必先 clone、不必本機安裝，點連結就能體驗。
 
 本倉庫為**為了上雲端（例如 Render）而維護的版本**：讓**沒有下載本專案程式碼的人**也能透過公開網址使用網站。
 
 與本機完整版相比，**功能會在很大程度受限**，主要原因是**資料爬取／外部 API 請求**在雲端環境容易受到**服務商網路、頻率、出口 IP、防火牆與第三方來源限制**影響，行為與穩定性無法與本機開發環境完全一致。
 
-若你需要與作者日常使用的**完整功能**，請改參考本機完整版專案（例如 `marketview_pro` / 本機部署說明），自行 clone 後在本機執行。
+若你需要與作者日常使用的**完整功能**，請直接開啟並 clone 本機完整版：**[https://github.com/En0526/marketview_pro](https://github.com/En0526/marketview_pro)**（點連結即可進入 repo，再依該專案 README 在本機部署執行）。
 
 ---
 
 一個智能交易系統，具備擇時功能和策略自動匹配能力。
 
-> **📋 [網站使用指南（客戶必看）](網站使用指南.md)** — 線上示意版：[https://trading-system-kkhs.onrender.com/](https://trading-system-kkhs.onrender.com/)；完整功能洽詢見指南內說明
+> **[網站使用指南（客戶必看）](網站使用指南.md)** — 線上示意版：[https://trading-system-kkhs.onrender.com/](https://trading-system-kkhs.onrender.com/)；完整版程式庫（可點）：[https://github.com/En0526/marketview_pro](https://github.com/En0526/marketview_pro)；洽詢見指南內說明
 
 ## 功能特色
 
-- 📊 **市場監控**: 即時顯示美股、台股及主要國際市場盤勢
-- ⏰ **擇時功能**: 智能判斷最佳交易時機
-- 🎯 **策略匹配**: 自動選擇最適合當前市場環境的交易策略
-- 🌐 **Web 介面**: 一目了然的市場數據展示
+- **市場監控**：即時顯示美股、台股及主要國際市場盤勢
+- **擇時功能**：智能判斷最佳交易時機
+- **策略匹配**：自動選擇最適合當前市場環境的交易策略
+- **Web 介面**：一目了然的市場數據展示
 
 ## 專案結構
 

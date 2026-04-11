@@ -103,6 +103,8 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
 header h1 {
@@ -110,6 +112,34 @@ header h1 {
     font-size: 26px;
     font-weight: 700;
     letter-spacing: -0.02em;
+}
+
+.main-nav {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.main-nav .nav-link {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.main-nav .nav-link:hover {
+    background: var(--color-nav-hover-bg);
+    color: var(--color-link);
+}
+
+.main-nav .nav-link.active {
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
+    font-weight: 600;
+    box-shadow: var(--shadow-accent);
 }
 
 .header-info {
@@ -1596,6 +1626,44 @@ header h1 {
 
 .volume-container {
     margin-top: 15px;
+}
+
+/* 選股頁（含示意版） */
+.selecting-page-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.selecting-page-section .section-header h2 {
+    color: var(--color-text-heading);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.selecting-results {
+    margin-top: 20px;
+}
+
+.stock-screener-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.stock-screener-item {
+    min-width: 180px;
+    padding: 12px;
+}
+
+.selecting-demo-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
 }
 
 .volume-header {

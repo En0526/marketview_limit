@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選股策略（示意）— 市場監控網站 (示意版)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>市場監控網站 (示意版)</h1>
+            <nav class="main-nav" aria-label="主要導覽">
+                <a href="/" class="nav-link">看盤</a>
+                <a href="/selecting" class="nav-link active">選股</a>
+            </nav>
+        </header>
+
+        <div class="tech-notice-banner" style="margin-bottom: 20px;">
+            選股篩選<strong>僅為介面示意</strong>：雲端環境運算時間長、API 額度與資料源限制多，本站<strong>不開放執行</strong>實際掃描。完整選股請於本機使用
+            <a href="https://github.com/En0526/marketview_pro" style="color: inherit; text-decoration: underline;" target="_blank" rel="noopener noreferrer">marketview_pro</a>
+            依說明部署執行。
+        </div>
+
+        <section class="market-section selecting-page-section">
+            <div class="section-header">
+                <h2>策略1：毛利率 · 營收成長 · 5MA&gt;20MA</h2>
+                <div class="section-controls">
+                    <span class="update-time" id="stock-screener-update-time">—</span>
+                    <button type="button" class="btn-refresh-small" disabled title="示意版不執行篩選">執行（示意版未開放）</button>
+                </div>
+            </div>
+            <p class="volume-desc">
+                條件：連續 3 季毛利率 &gt; 30% 且每季持續成長；<strong>近三月營收年增每個月都要 &gt; 20%</strong>；日K線 5MA &gt; 20MA。篩選標的：<strong>科技股</strong>（排除金融、傳產）。本機完整版約需 5–10 分鐘（多執行緒，含重試）。
+            </p>
+            <p class="selecting-demo-label">以下為<strong>靜態示意</strong>（非即時篩選、非投資建議）：</p>
+            <div id="stock-screener-results" class="selecting-results">
+                <div class="stock-screener-list">
+                    <div class="stock-screener-item market-card" aria-hidden="true">
+                        <div class="market-card-name">示意—半導體元件 A</div>
+                        <div class="market-card-symbol">DEMO01</div>
+                        <div class="detail-item"><span>近3季毛利率：</span><span>32% → 34% → 36%</span></div>
+                        <div class="detail-item"><span>近三月營收年增：</span><span>22% / 24% / 21%</span></div>
+                        <div class="detail-item"><span>5MA&gt;20MA：</span><span>✓</span></div>
+                    </div>
+                    <div class="stock-screener-item market-card" aria-hidden="true">
+                        <div class="market-card-name">示意—電子零組件 B</div>
+                        <div class="market-card-symbol">DEMO02</div>
+                        <div class="detail-item"><span>近3季毛利率：</span><span>31% → 33% → 35%</span></div>
+                        <div class="detail-item"><span>近三月營收年增：</span><span>25% / 23% / 26%</span></div>
+                        <div class="detail-item"><span>5MA&gt;20MA：</span><span>✓</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

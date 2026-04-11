@@ -55,6 +55,13 @@ def index():
     """首頁"""
     return render_template('index.html')
 
+
+@app.route('/selecting')
+def selecting_page():
+    """選股頁（示意版：雲端不執行實際篩選，僅展示介面）"""
+    return render_template('selecting.html')
+
+
 @app.route('/api/ratios')
 def get_ratios():
     """重要比率 API（金銀比、銀銅比、以太比特比、比特黃金比等），可即時更新"""

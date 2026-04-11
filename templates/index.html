@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>交易系統 - 市場監控</title>
+    <title>marketview(示意)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>📈 交易系統 - 市場監控</h1>
+            <h1>marketview(示意)</h1>
         </header>
 
         <div class="market-sections">
@@ -64,7 +64,7 @@
                 <div class="section-header section-header-toggle" onclick="toggleCollapsibleSection(this)">
                     <div class="section-header-left">
                         <span class="toggle-icon">▶</span>
-                        <h2>🌍 國際 · 📈 ETF · 🥇 金屬 · ₿ 加密 · 📊 比率</h2>
+                        <h2>國際 · ETF · 金屬 · 加密 · 比率</h2>
                     </div>
                     <div class="section-controls" onclick="event.stopPropagation()">
                         <button class="btn-refresh-small" onclick="refreshMarketData('international')" title="更新國際">🔄 國際</button>
@@ -77,14 +77,14 @@
                 <div class="section-body">
                 <!-- 國際市場（雲端限制暫停顯示） -->
                 <div class="combined-subsection">
-                    <h3 class="market-subsection-title">🌍 國際市場</h3>
+                    <h3 class="market-subsection-title">國際市場</h3>
                     <div id="international-markets" class="tech-disabled-block">
                         <div class="tech-disabled-msg">⚠️ 技術問題：因 Yahoo 對雲端服務商 IP 有限制，台股以及國際市場等報價暫不顯示。本網僅提供示意，完整版功能請聯繫 jim30511@gmail.com。</div>
                     </div>
                 </div>
                 <!-- ETF 專區（限制寬度避免超出去） -->
                 <div class="combined-subsection etf-subsection-overflow-fix">
-                    <h3 class="market-subsection-title">📈 ETF 專區 <span class="update-time" id="etf-update-time">-</span></h3>
+                    <h3 class="market-subsection-title">ETF 專區 <span class="update-time" id="etf-update-time">-</span></h3>
                     <div class="etf-hint">美股 VOO、QQQ；台股 0050、00951 等，來源 yfinance</div>
                     <div id="etf-markets" class="etf-grid etf-grid-horizontal-row">
                         <div class="loading">載入中...</div>
@@ -92,7 +92,7 @@
                 </div>
                 <!-- 重金屬專區 -->
                 <div class="combined-subsection">
-                    <h3 class="market-subsection-title">🥇 重金屬期貨 <span class="update-time" id="metals-update-time">-</span></h3>
+                    <h3 class="market-subsection-title">重金屬期貨 <span class="update-time" id="metals-update-time">-</span></h3>
                     <div class="metals-session-hint" id="metals-session-hint">COMEX 時段：—</div>
                     <div id="metals-futures" class="metals-grid metals-grid-horizontal-row">
                         <div class="loading">載入中...</div>
@@ -100,7 +100,7 @@
                 </div>
                 <!-- 加密貨幣專區 -->
                 <div class="combined-subsection">
-                    <h3 class="market-subsection-title">₿ 加密貨幣 <span class="update-time" id="crypto-update-time">-</span></h3>
+                    <h3 class="market-subsection-title">加密貨幣 <span class="update-time" id="crypto-update-time">-</span></h3>
                     <div class="crypto-hint">報價為美元，24 小時交易</div>
                     <div id="crypto-markets" class="crypto-grid crypto-grid-horizontal-row">
                         <div class="loading">載入中...</div>
@@ -108,7 +108,7 @@
                 </div>
                 <!-- 重要比率專區 -->
                 <div class="combined-subsection">
-                    <h3 class="market-subsection-title">📊 重要比率 <span class="update-time" id="ratios-update-time">-</span></h3>
+                    <h3 class="market-subsection-title">重要比率 <span class="update-time" id="ratios-update-time">-</span></h3>
                     <div class="ratios-hint">金屬比率為 20 年區間；加密相關為全期。點「更新」即時重算。<strong>點擊任一比率可看走勢圖</strong>。</div>
                     <div id="ratios-container" class="ratios-grid">
                         <div class="loading">載入中...</div>

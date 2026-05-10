@@ -22,6 +22,24 @@
 
         <div class="market-sections">
             <div id="skipped-symbols-hint" class="skipped-symbols-hint hidden" aria-hidden="true"></div>
+            <section class="market-section ai-digest-section collapsible-section" data-expanded="true">
+                <div class="section-header section-header-toggle" onclick="toggleCollapsibleSection(this)">
+                    <div class="section-header-left">
+                        <span class="toggle-icon">▶</span>
+                        <h2>🤖 AI 速覽</h2>
+                    </div>
+                    <div class="section-controls" onclick="event.stopPropagation()">
+                        <span class="update-time" id="ai-digest-update-time">-</span>
+                        <button type="button" class="btn-refresh-small" id="ai-digest-refresh-btn" title="重新向 LLM 請求摘要">🔄 重算</button>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <p class="ai-digest-hint">以新聞聲量與盤前資料為素材，由 LLM 濃縮為速讀。請將專案根目錄 <code>.env.example</code> 複製為 <code>.env</code> 並填入你自己的 <code>GEMINI_API_KEY</code> 或 <code>OPENAI_API_KEY</code>（說見檔內註解）。漲跌幅為約略前盤相對變化，僅供參考。</p>
+                    <div id="ai-digest-body" class="ai-digest-body">
+                        <div class="loading">載入 AI 速覽…</div>
+                    </div>
+                </div>
+            </section>
             <div class="tech-notice-banner">⚠️ 技術問題：因 Yahoo 對雲端服務商 IP 有限制，台股以及國際市場等報價暫不顯示。本網僅提供示意，完整版功能請聯繫 jim30511@gmail.com。</div>
 
             <!-- 1. 美股市場（七巨頭，Finnhub；財報系統） -->
@@ -203,6 +221,7 @@
                         <input type="file" id="institutional-csv-file" accept=".csv" multiple />
                         <input type="text" id="institutional-csv-date" placeholder="日期留空則從檔名/內容辨識" maxlength="8" title="單檔時可填 YYYYMMDD，多檔時請檔名含日期" />
                         <button type="button" class="btn-refresh-small" onclick="uploadInstitutionalCsv()">上傳</button>
+                        <button type="button" class="btn-refresh-small" onclick="downloadInstitutionalCsv()" title="自動下載今年缺少的 BFI82U CSV">下載今年缺少 CSV</button>
                         <span id="institutional-upload-status" class="institutional-upload-status"></span>
                     </div>
                 </div>
@@ -241,6 +260,7 @@
                                 <span class="ir-upload-hint">系統會從內容辨識月份，自動存為「N月.csv」並覆蓋同月同市場舊檔</span>
                                 <input type="file" id="ir-csv-file" accept=".csv" multiple />
                                 <button type="button" class="btn-refresh-small" onclick="uploadIRCsv()">上傳</button>
+                                <button type="button" class="btn-refresh-small" onclick="downloadIRCsv()" title="自動下載當月與下個月的上市/上櫃法說會 CSV">下載當月/下月 CSV</button>
                                 <span id="ir-upload-status" class="institutional-upload-status"></span>
                             </div>
                         </div>

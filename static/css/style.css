@@ -2556,3 +2556,154 @@ header h1 {
     }
 }
 
+/* —— AI 速覽 —— */
+.ai-digest-section {
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--color-tint-info-border);
+    background: linear-gradient(165deg, rgba(var(--accent-rgb), 0.07) 0%, var(--color-surface) 42%);
+}
+
+.ai-digest-hint {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin: 0 0 12px;
+    line-height: 1.45;
+}
+
+.ai-digest-hint code {
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+    color: var(--color-accent);
+}
+
+.ai-digest-body {
+    min-height: 3rem;
+}
+
+.ai-digest-disabled .ai-digest-muted,
+.ai-digest-muted {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+.ai-digest-warn {
+    color: var(--color-down);
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+}
+
+.ai-digest-block {
+    margin-bottom: 1rem;
+    padding: 12px 14px;
+    background: var(--color-surface-inset);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-on-surface);
+}
+
+.ai-digest-block:last-child {
+    margin-bottom: 0;
+}
+
+.ai-digest-block-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-heading);
+    margin: 0 0 10px;
+    letter-spacing: 0.02em;
+}
+
+.ai-digest-top-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border-on-surface);
+}
+
+.ai-digest-top-item:last-child {
+    border-bottom: none;
+    padding-bottom: 2px;
+}
+
+.ai-digest-top-rank {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--color-accent);
+    min-width: 1.75rem;
+    padding-top: 2px;
+}
+
+.ai-digest-top-title {
+    font-weight: 600;
+    color: var(--color-text-heading);
+}
+
+.ai-digest-symbol {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: 0.92em;
+}
+
+.ai-digest-top-change {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+.ai-digest-top-news {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+.ai-digest-k {
+    color: var(--color-accent-hover);
+    font-weight: 600;
+    margin-right: 2px;
+}
+
+.ai-digest-pm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 768px) {
+    .ai-digest-pm-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ai-digest-pm-head {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    margin-bottom: 8px;
+}
+
+.ai-digest-bullets {
+    margin: 0;
+    padding-left: 1.15rem;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--color-text-secondary);
+}
+
+.ai-digest-bullets li {
+    margin-bottom: 6px;
+}
+
+/* 若下方盤前區加上 id 與 hint，可自動套用標籤（與 AI 摘要一致） */
+.premarket-window-hint {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin: 0 0 12px;
+    line-height: 1.45;
+}
+
+.premarket-session-badge {
+    font-size: 0.78em;
+    font-weight: 500;
+    color: var(--color-accent);
+    margin-left: 4px;
+}

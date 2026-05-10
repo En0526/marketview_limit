@@ -91,6 +91,13 @@ class Config:
     TWELVEDATA_API_KEY = os.environ.get('TWELVEDATA_API_KEY', '').strip()
     # 加密一律用 Deribit 交易所，無需 key
 
+    # AI 速覽（請於 .env 設定 GEMINI_* 或 OPENAI_*；勿將金鑰提交至 Git）
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '').strip()
+    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash').strip()
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '').strip()
+    OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1').strip()
+    OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini').strip()
+
     # 數據更新間隔（秒）
     DATA_UPDATE_INTERVAL = 60
     

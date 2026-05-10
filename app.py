@@ -20,9 +20,11 @@ try:
     from strategy.strategy_matcher import StrategyMatcher
     from news_analysis.volume_analyzer import VolumeAnalyzer
     from news_analysis.premarket_analyzer import PremarketAnalyzer
+    from news_analysis.ai_digest import build_digest
     from news_analysis.ir_fetcher import IRFetcher
     from economic_data.economic_calendar import EconomicCalendar
     from market_data.institutional_net import (
+        download_bfi82u_csv_range,
         get_institutional_net_ytd,
         list_uploaded_dates,
         save_uploaded_csv,
@@ -230,6 +232,33 @@ def get_news_volume():
             }
         })
 
+@app.route('/api/ai-digest')
+def get_ai_digest():
+    """AI 速覽：統整新聞聲量與盤前資料（GEMINI_API_KEY；或 OPENAI_API_KEY 備援）。"""
+    from flask import request
+    try:
+        refresh = request.args.get('refresh', 'false').lower() == 'true'
+        data = build_digest(
+            force_refresh=refresh,
+            volume_analyzer=volume_analyzer,
+            premarket_analyzer=premarket_analyzer,
+            data_fetcher=data_fetcher,
+        )
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'data': {
+                'enabled': False,
+                'message': str(e),
+                'top5': [],
+                'premarket_bullets': {'tw': [], 'us': []},
+            }
+        })
+
 @app.route('/api/premarket-data')
 @app.route('/api/premarket-data/<market>')
 def get_premarket_data(market=None):
@@ -318,6 +347,42 @@ def get_institutional_net_dates():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/institutional-net/download-csv', methods=['POST'])
+def download_institutional_csv():
+    """下載今年缺少的 BFI82U CSV 到 institutional_csv/，供三大法人累計圖使用。"""
+    from flask import request
+    try:
+        payload = request.get_json(silent=True) if request.is_json else {}
+        payload = payload or {}
+        start_raw = request.form.get('start_date') or payload.get('start_date') or ''
+        end_raw = request.form.get('end_date') or payload.get('end_date') or ''
+        overwrite_raw = request.form.get('overwrite') or payload.get('overwrite') or 'false'
+
+        now = datetime.now()
+        start = datetime(now.year, 1, 1)
+        end = now
+
+        def parse_date_input(value: str, fallback: datetime) -> datetime:
+            value = (value or '').strip().replace('-', '').replace('/', '')
+            if not value:
+                return fallback
+            if len(value) != 8 or not value.isdigit():
+                raise ValueError('日期格式請用 YYYYMMDD 或 YYYY-MM-DD')
+            return datetime(int(value[:4]), int(value[4:6]), int(value[6:8]))
+
+        start = parse_date_input(start_raw, start)
+        end = parse_date_input(end_raw, end)
+        if end < start:
+            return jsonify({'success': False, 'error': '結束日不可早於起始日'}), 400
+
+        overwrite = str(overwrite_raw).lower() in ('1', 'true', 'yes', 'y')
+        summary = download_bfi82u_csv_range(start, end, overwrite=overwrite)
+        summary['uploaded_dates'] = list_uploaded_dates()
+        return jsonify({'success': True, 'data': summary})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/institutional-net/upload', methods=['POST'])
 def upload_institutional_csv():
     """上傳 BFI82U CSV，表單欄位：file（檔案）、date（可選，YYYYMMDD）。日期會依序從：表單 → 檔名 → CSV 內容 辨識。"""
@@ -365,9 +430,11 @@ def get_ir_meetings():
             # 清除緩存強制刷新
             ir_fetcher.cache.clear()
             ir_fetcher.cache_time.clear()
-        
+
+        auto_csv_sync = ir_fetcher.ensure_current_and_next_ir_csv(force=refresh)
         timeline = ir_fetcher.get_ir_timeline(months_ahead=3)
         timeline['timestamp'] = datetime.now(timezone.utc).isoformat()
+        timeline['auto_csv_sync'] = auto_csv_sync
         last_updated = ir_fetcher.get_ir_csv_last_updated()
         timeline['csv_last_updated'] = last_updated.isoformat() if last_updated else None
         timeline['uploaded_files'] = ir_fetcher.list_ir_csv_files()
@@ -393,6 +460,25 @@ def get_ir_meetings():
                 'uploaded_files': ir_fetcher.list_ir_csv_files()
             }
         })
+
+
+@app.route('/api/ir-meetings/download-csv', methods=['POST'])
+def download_ir_csv():
+    """自動下載當月與下個月的上市/上櫃法說會 CSV。"""
+    try:
+        summary = ir_fetcher.ensure_current_and_next_ir_csv(force=True)
+        last_updated = ir_fetcher.get_ir_csv_last_updated()
+        return jsonify({
+            'success': True,
+            'data': {
+                'summary': summary,
+                'uploaded_files': ir_fetcher.list_ir_csv_files(),
+                'csv_last_updated': last_updated.isoformat() if last_updated else None,
+            },
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/ir-meetings/upload', methods=['POST'])

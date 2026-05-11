@@ -1556,6 +1556,14 @@ header h1 {
     border-radius: 6px;
 }
 
+.tech-notice-banner .tech-notice-en {
+    font-size: 12px;
+    line-height: 1.45;
+    margin-top: 10px;
+    opacity: 0.9;
+    color: rgba(244, 244, 245, 0.88);
+}
+
 .skipped-symbols-hint {
     font-size: 13px;
     color: #856404;

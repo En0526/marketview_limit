@@ -648,9 +648,9 @@ class MarketDataFetcher:
         all_tasks = {
             'us_stocks': lambda: self._get_us_stocks(),
             'tw_markets': lambda: self.get_multiple_markets(Config.TW_MARKETS),
-            'etf': lambda: self.get_multiple_markets(getattr(Config, 'ETF', {})),
+            'etf': lambda: {},
             'international_markets': lambda: self.get_multiple_markets(Config.INTERNATIONAL_MARKETS),
-            'metals_futures_raw': lambda: self.get_multiple_markets(getattr(Config, 'METALS_FUTURES', {})),
+            'metals_futures_raw': lambda: {},
             'crypto': lambda: self._get_crypto_deribit(),
             'ratios': lambda: self.get_ratios_summary(),
         }

@@ -101,7 +101,11 @@ class Config:
     # 數據更新間隔（秒）
     DATA_UPDATE_INTERVAL = 60
     
-    # 端口配置
-    PORT = int(os.environ.get('PORT', 5000))
+    # 端口配置（Render 會注入 PORT；空字串時勿 int('') 崩潰）
+    _raw_port = (os.environ.get('PORT') or '5000').strip()
+    try:
+        PORT = int(_raw_port) if _raw_port else 5000
+    except ValueError:
+        PORT = 5000
     DEBUG = os.environ.get('FLASK_ENV') == 'development'
 

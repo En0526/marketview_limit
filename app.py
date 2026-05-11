@@ -20,7 +20,6 @@ try:
     from strategy.strategy_matcher import StrategyMatcher
     from news_analysis.volume_analyzer import VolumeAnalyzer
     from news_analysis.premarket_analyzer import PremarketAnalyzer
-    from news_analysis.ai_digest import build_digest
     from news_analysis.ir_fetcher import IRFetcher
     from economic_data.economic_calendar import EconomicCalendar
     from market_data.institutional_net import (
@@ -236,6 +235,7 @@ def get_news_volume():
 def get_ai_digest():
     """AI 速覽：統整新聞聲量與盤前資料（GEMINI_API_KEY；或 OPENAI_API_KEY 備援）。"""
     from flask import request
+    from news_analysis.ai_digest import build_digest
     try:
         refresh = request.args.get('refresh', 'false').lower() == 'true'
         data = build_digest(

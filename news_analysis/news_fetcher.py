@@ -205,68 +205,29 @@ class NewsFetcher:
                 search_tasks.append({
                     'name': f'鉅亨網 ({keyword})',
                     'type': 'google',
-                    'keywords': ['鉅亨', keyword],  # 鉅亨 + 關鍵詞
+                    'keywords': ['鉅亨', keyword],
                     'language': 'zh-TW',
                     'region': 'TW',
                     'priority': 1
                 })
-            
-            # 2. 經濟日報 - 對每個關鍵詞單獨搜索
+
+            # 2. Google News 單關鍵詞搜索（精簡版只保留此來源）
             for keyword in keywords:
                 search_tasks.append({
-                    'name': f'經濟日報 ({keyword})',
+                    'name': f'Google News ({keyword})',
                     'type': 'google',
-                    'keywords': ['經濟日報', keyword],  # 經濟日報 + 關鍵詞
+                    'keywords': [keyword],
                     'language': 'zh-TW',
                     'region': 'TW',
                     'priority': 2
                 })
             
-            # 3. 對每個關鍵詞單獨搜索（Google News）
-            for keyword in keywords:
-                search_tasks.append({
-                    'name': f'Google News ({keyword})',
-                    'type': 'google',
-                    'keywords': [keyword],  # 單個關鍵詞
-                    'language': 'zh-TW',
-                    'region': 'TW',
-                    'priority': 3
-                })
-            
-            # 4. Yahoo 財經 - 每個關鍵詞單獨搜索
-            for keyword in keywords:
-                search_tasks.append({
-                    'name': f'Yahoo 財經 ({keyword})',
-                    'type': 'google',
-                    'keywords': [keyword, 'Yahoo'],
-                    'language': 'zh-TW',
-                    'region': 'TW',
-                    'priority': 4
-                })
-            
-            # 5. Wall Street Journal - 每個關鍵詞單獨搜索
-            for keyword in keywords:
-                search_tasks.append({
-                    'name': f'WSJ ({keyword})',
-                    'type': 'google',
-                    'keywords': [keyword, 'WSJ'],
-                    'language': 'zh-TW',
-                    'region': 'TW',
-                    'priority': 5
-                })
-            
             news_sources = search_tasks
-        else:  # US market（與台股盤前一致：每個關鍵詞 + 每個來源分開搜，符合一個就好）
+        else:  # US market（精簡：只用3個主要來源，縮短爬取時間）
             us_sources = [
                 ('Wall Street Journal', 'WSJ', 1),
                 ('Yahoo Finance', 'Yahoo Finance', 2),
                 ('Reuters', 'Reuters', 3),
-                ('Bloomberg', 'Bloomberg', 4),
-                ('CNBC', 'CNBC', 5),
-                ('MarketWatch', 'MarketWatch', 6),
-                ('CNN Business', 'CNN', 7),
-                ('Forbes', 'Forbes', 8),
-                ("Barron's", "Barron's", 9),
             ]
             search_tasks = []
             for name, source_keyword, base_priority in us_sources:

@@ -192,6 +192,75 @@ class IRFetcher:
         # 如果找不到匹配的，返回第一個文件
         return csv_files[0] if csv_files else None
 
+    def _find_csv_files(self, year: int, month: int, market: str = 'sii') -> List[Path]:
+        """
+        查找該月份可能包含資料的所有 CSV，供合併解析。
+        避免只讀取 N月.csv 而漏掉同月另存的下載檔。
+        """
+        candidates: List[Path] = []
+        seen = set()
+
+        primary = self._find_csv_file(year, month, market)
+        if primary and primary.exists():
+            candidates.append(primary)
+            seen.add(str(primary.resolve()))
+
+        csv_files = list(self.csv_dir.glob('*.csv'))
+        csv_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+
+        gregorian_year = year + 1911
+        for csv_file in csv_files:
+            key = str(csv_file.resolve())
+            if key in seen:
+                continue
+            try:
+                matched = False
+                with open(csv_file, 'r', encoding='big5', errors='ignore') as f:
+                    reader = csv.reader(f)
+                    for i, row in enumerate(reader):
+                        if i > 60:
+                            break
+                        if not row or len(row) < 3:
+                            continue
+                        date_str = row[2].strip() if len(row) > 2 else ''
+                        if not date_str:
+                            continue
+                        parsed_date = self._parse_ir_date(date_str, year)
+                        if not parsed_date:
+                            continue
+                        if parsed_date.year == gregorian_year and parsed_date.month == month:
+                            matched = True
+                            break
+                if matched:
+                    candidates.append(csv_file)
+                    seen.add(key)
+            except Exception:
+                continue
+
+        return candidates
+
+    def _matches_market(self, company_code: str, market: str) -> bool:
+        """
+        依代號粗分市場，避免上市/上櫃在合併時互相混入。
+        - sii（上市）: 常見 1xxx/2xxx/9xxx
+        - otc（上櫃）: 常見 3xxx~8xxx
+        """
+        code = (company_code or '').strip()
+        if not code:
+            return False
+        first_digit = None
+        for ch in code:
+            if ch.isdigit():
+                first_digit = ch
+                break
+        if first_digit is None:
+            return True
+        if market == 'sii':
+            return first_digit in {'1', '2', '9'}
+        if market == 'otc':
+            return first_digit in {'3', '4', '5', '6', '7', '8'}
+        return True
+
     def _decode_csv_bytes(self, content: bytes) -> str:
         """MOPS CSV 常見 Big5/CP950，依序嘗試解碼。"""
         for encoding in ('big5hkscs', 'cp950', 'big5', 'utf-8-sig', 'utf-8'):
@@ -372,63 +441,61 @@ class IRFetcher:
             return self.cache[cache_key]
         
         meetings = []
-        
-        # 查找CSV文件
-        csv_file = self._find_csv_file(year, month, market)
-        
-        if not csv_file or not csv_file.exists():
+        seen_meetings = set()
+
+        # 查找同月可能的所有 CSV，做合併解析
+        csv_files = self._find_csv_files(year, month, market)
+
+        if not csv_files:
             print(f"未找到 {year}年{month}月 的CSV文件，請確保文件已放置在 {self.csv_dir} 目錄中")
             return []
-        
-        try:
+
+        for csv_file in csv_files:
+          try:
             # 讀取CSV文件（使用Big5編碼）
             with open(csv_file, 'r', encoding='big5', errors='ignore') as f:
                 csv_reader = csv.reader(f)
                 rows = list(csv_reader)
-                
+
                 # 找到表頭行
                 header_row = -1
                 for i, row in enumerate(rows):
                     if len(row) > 0:
                         row_text = ' '.join(row)
-                        # 檢查是否包含表頭關鍵字
                         if '公司代號' in row_text or '公司名稱' in row_text or '召開' in row_text:
                             header_row = i
                             break
-                
-                # 如果找到表頭，從下一行開始解析
+
                 start_row = header_row + 1 if header_row >= 0 else 1
-                
-                # 解析數據行
+
                 for row in rows[start_row:]:
-                    if len(row) >= 3:  # 至少要有公司代號、名稱、日期
+                    if len(row) >= 3:
                         try:
                             company_code = row[0].strip() if len(row) > 0 else ''
                             company_name = row[1].strip() if len(row) > 1 else ''
                             meeting_date_str = row[2].strip() if len(row) > 2 else ''
                             meeting_time = row[3].strip() if len(row) > 3 else ''
                             location = row[4].strip() if len(row) > 4 else ''
-                            
-                            # 跳過空行或無效數據
+
                             if not company_code or not company_name:
                                 continue
                             if '公司代號' in company_code or '公司名稱' in company_code:
                                 continue
-                            
-                            # 解析日期（格式可能是 115/01/28 或 116/01/28）
+                            if not self._matches_market(company_code, market):
+                                continue
+
                             meeting_date = self._parse_ir_date(meeting_date_str, year)
-                            
-                            # 如果日期解析成功，添加數據（不嚴格限制月份，因為CSV文件可能包含多個月的數據）
+
                             if meeting_date:
                                 gregorian_year = year + 1911
-                                # 允許年份有1年的誤差（因為CSV可能是去年的數據）
                                 year_diff = abs(meeting_date.year - gregorian_year)
-                                # 如果年份匹配，且月份也匹配，則添加
-                                # 但如果查詢的月份文件不存在，也允許添加相近月份的數據（±1個月）
                                 if year_diff <= 1:
-                                    # 嚴格匹配月份，或者允許±1個月的誤差（處理文件命名和實際內容不匹配的情況）
                                     month_diff = abs(meeting_date.month - month)
                                     if month_diff == 0 or (month_diff <= 1 and len(meetings) == 0):
+                                        dedupe_key = (company_code, meeting_date.isoformat(), meeting_time)
+                                        if dedupe_key in seen_meetings:
+                                            continue
+                                        seen_meetings.add(dedupe_key)
                                         meetings.append({
                                             'company_code': company_code,
                                             'company_name': company_name,
@@ -439,10 +506,10 @@ class IRFetcher:
                                             'month': month,
                                             'market': market
                                         })
-                        except Exception as e:
+                        except Exception:
                             continue
-                            
-        except Exception as e:
+
+          except Exception as e:
             print(f"讀取CSV文件時發生錯誤: {str(e)}")
         
         # 更新緩存

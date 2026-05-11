@@ -163,8 +163,8 @@ class PremarketAnalyzer:
         
         try:
             # 使用中文關鍵詞搜索台股盤前新聞（包含美股相關新聞）
-            keywords = ['台股', '盤前', '美股', '美股盤後']
-            news_list = self.news_fetcher.get_premarket_news(keywords, hours=12, market='taiwan')
+            keywords = ['台股', '盤前']
+            news_list = self.news_fetcher.get_premarket_news(keywords, hours=8, market='taiwan')
             
             # 過濾時間範圍內的新聞（從start_time到reference_time）
             filtered_news = []
@@ -269,8 +269,8 @@ class PremarketAnalyzer:
             start_time = self.us_eastern_tz.localize(start_time)
         
         try:
-            keywords = ['premarket', 'stock', 'market', 'earnings', 'earnings report']
-            news_list = self.news_fetcher.get_premarket_news(keywords, hours=24, market='us')
+            keywords = ['premarket', 'stock']
+            news_list = self.news_fetcher.get_premarket_news(keywords, hours=12, market='us')
             
             # 只保留「開盤前 12 小時內」的新聞：start_time <= 發佈時間 <= reference_time
             filtered_news = []

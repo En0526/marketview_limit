@@ -34,8 +34,8 @@ class VolumeAnalyzer:
             公司聲量列表，按頻率排序
         """
         try:
-            keywords = ['台股', '股票', '股市']
-            result = self.news_fetcher.get_news_volume_with_news(keywords, hours, max_news_per_company=30)
+            keywords = ['台股', '股市']
+            result = self.news_fetcher.get_news_volume_with_news(keywords, hours, max_news_per_company=10)
             volume_dict = result['volume']
             news_by_symbol = result.get('news_by_symbol', {})
             
@@ -94,7 +94,7 @@ class VolumeAnalyzer:
                     return out
 
         try:
-            top_companies = self.get_top_companies_by_volume(hours=24, top_n=15)
+            top_companies = self.get_top_companies_by_volume(hours=24, top_n=5)
         except Exception as e:
             print(f"Error in get_top_companies_by_volume: {str(e)}")
             top_companies = []
